@@ -18,14 +18,17 @@ def generate(crd, version):
     root = version['schema']['openAPIV3Schema']['properties']['spec']
 
     for path, type_ in traverse(root):
+        name = '_'.join(path).lower()
         inputs += [{
-            'name': '_'.join(path).lower(),
+            'name': name,
             'type': k8sTypeToKubeflowType[type_],
             'optional': True
         }]
         command += [
-            '--' + '-'.join(path),
-            {'inputValue': '_'.join(path).lower()}
+            '--param',
+            '.'.join(path),
+            type_,
+            {'inputValue': name}
         ]
 
     return {
