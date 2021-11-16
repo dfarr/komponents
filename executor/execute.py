@@ -1,3 +1,4 @@
+import json
 import argparse
 
 
@@ -31,13 +32,14 @@ def generateSpec(params):
 
     for path, type_, *value_ in params:
         if value_:
-
             if type_ == 'string':
                 value = value_[0]
             elif type_ == 'integer':
                 value = int(value_[0])
             elif type_ == 'boolean':
                 value = value_[0] == 'True'
+            elif type_ == 'array':
+                value = json.loads(value_[0])
             else:
                 pass
 

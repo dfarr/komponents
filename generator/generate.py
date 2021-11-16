@@ -3,6 +3,7 @@ import yaml
 
 
 k8sTypeToKubeflowType = {
+    'array': 'List',
     'boolean': 'Bool',
     'integer': 'Integer',
     'string': 'String'
@@ -17,17 +18,18 @@ def generate(crd, version):
 
     root = version['schema']['openAPIV3Schema']['properties']['spec']
 
-    for path, type_ in traverse(root):
-        name = '_'.join(path).lower()
+    for node in traverse(root):
+        name = '_'.join(node['path']).lower()
         inputs += [{
             'name': name,
-            'type': k8sTypeToKubeflowType[type_],
+            'type': k8sTypeToKubeflowType[node['type']],
+            'description': node['description'],
             'optional': True
         }]
         command += [
             '--param',
-            '.'.join(path),
-            type_,
+            '.'.join(node['path']),
+            node['type'],
             {'inputValue': name}
         ]
 
@@ -50,14 +52,18 @@ def traverse(node, path=[]):
         if 'properties' in node:
             for name, node in node['properties'].items():
                 args += traverse(node, path + [name])
+        elif 'additionalProperties' in node:
+            # how to handle these?
+            pass
 
         return args
 
-    elif type_ == 'array':
-        pass
-
-    elif type_ in ('boolean', 'integer', 'string'):
-        return [(path, type_)]
+    elif type_ in ('array', 'boolean', 'integer', 'string'):
+        return [{
+            'path': path,
+            'type': type_,
+            'description': node['description'] if 'description' in node else ''
+        }]
 
     else:
         print('Unrecognised type:', type_)
