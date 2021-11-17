@@ -84,11 +84,11 @@ def run(apiVersion, kind, namespace, name, params, successConditions, failureCon
         if satisfies(event['raw_object'], failureConditions):
             return False, f'{kind} "{resource.metadata.name}" satisfied failure condition'
 
-    return False, f'{kind} "{resource.metadata.name}" did complete within {timeout}s'
+    return False, f'{kind} "{resource.metadata.name}" did not satisfy success or failure condition within {timeout}s'
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    print(args)
+    # print(args)
 
     success, message = run(
         args.api_version,

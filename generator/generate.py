@@ -25,6 +25,10 @@ def generate(crd, version, successCondition, failureCondition):
         'name': 'failure_condition',
         'type': 'String',
         'default': failureCondition
+    }, {
+        'name': 'timeout',
+        'type': 'Integer',
+        'default': 3600
     }]
 
     command = [
@@ -37,7 +41,9 @@ def generate(crd, version, successCondition, failureCondition):
         '--success-condition',
         {'inputValue': 'success_condition'},
         '--failure-condition',
-        {'inputValue': 'failure_condition'}
+        {'inputValue': 'failure_condition'},
+        '--timeout',
+        {'inputValue': 'timeout'}
     ]
 
     root = version['schema']['openAPIV3Schema']['properties']['spec']
