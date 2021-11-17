@@ -15,13 +15,17 @@ parser.add_argument('--namespace', required=True)
 parser.add_argument('--success-condition', required=True)
 parser.add_argument('--failure-condition', required=True)
 parser.add_argument('--timeout', type=int, default=3600)
+parser.add_argument('--annotations', type=json.loads, default='{}')
+parser.add_argument('--labels', type=json.loads, default='{}')
 parser.add_argument('--param', action='append', nargs='*')
 
-def generate(apiVersion, kind, name, params):
+def generate(apiVersion, kind, name, annotations, labels, params):
     return {
         'apiVersion': apiVersion,
         'kind': kind,
         'metadata': {
+            'annotations': annotations,
+            'labels': labels,
             'generateName': f'{name}-'
         },
         'spec': generateSpec(params)
@@ -67,9 +71,10 @@ def satisfies(resource, conditions):
 
     return False
 
-def run(apiVersion, kind, namespace, name, params, successConditions, failureConditions, timeout):
+def run(apiVersion, kind, namespace, name, params, successConditions, failureConditions, timeout, annotations, labels):
     # generate
-    body = generate(apiVersion, kind, name, params)
+    body = generate(apiVersion, kind, name, annotations, labels, params)
+    # print(body)
 
     # create
     executor = Executor(apiVersion, kind, args.namespace)
@@ -98,7 +103,9 @@ if __name__ == '__main__':
         [(k, t, v[0]) for k, t, *v in args.param if v],
         parseCondition(args.success_condition),
         parseCondition(args.failure_condition),
-        args.timeout)
+        args.timeout,
+        args.annotations,
+        args.labels)
 
     if not success:
         raise Exception(message)

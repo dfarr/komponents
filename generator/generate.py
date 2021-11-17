@@ -29,21 +29,26 @@ def generate(crd, version, successCondition, failureCondition):
         'name': 'timeout',
         'type': 'Integer',
         'default': 3600
+    }, {
+        'name': 'annotations',
+        'type': 'Dict',
+        'default': '{}'
+    }, {
+        'name': 'labels',
+        'type': 'Dict',
+        'default': '{}'
     }]
 
     command = [
-        f'{crd["spec"]["group"]}/{version["name"]}',
-        crd['spec']['names']['kind'],
-        '--name',
-        {'inputValue': 'name'},
-        '--namespace',
-        {'inputValue': 'namespace'},
-        '--success-condition',
-        {'inputValue': 'success_condition'},
-        '--failure-condition',
-        {'inputValue': 'failure_condition'},
-        '--timeout',
-        {'inputValue': 'timeout'}
+        f'{crd["spec"]["group"]}/{version["name"]}',  # apiVersion
+        crd['spec']['names']['kind'],                 # kind
+        '--name', {'inputValue': 'name'},
+        '--namespace', {'inputValue': 'namespace'},
+        '--success-condition', {'inputValue': 'success_condition'},
+        '--failure-condition', {'inputValue': 'failure_condition'},
+        '--timeout', {'inputValue': 'timeout'},
+        '--annotations', {'inputValue': 'annotations'},
+        '--labels', {'inputValue': 'labels'}
     ]
 
     root = version['schema']['openAPIV3Schema']['properties']['spec']
