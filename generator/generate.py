@@ -9,11 +9,35 @@ k8sTypeToKubeflowType = {
     'string': 'String'
 }
 
-def generate(crd, version):
-    inputs = []
+def generate(crd, version, successCondition, failureCondition):
+    inputs = [{
+        'name': 'name',
+        'type': 'String'
+    }, {
+        'name': 'namespace',
+        'type': 'String',
+        'default': '{{workflow.namespace}}'
+    }, {
+        'name': 'success_condition',
+        'type': 'String',
+        'default': successCondition
+    }, {
+        'name': 'failure_condition',
+        'type': 'String',
+        'default': failureCondition
+    }]
+
     command = [
         f'{crd["spec"]["group"]}/{version["name"]}',
-        crd['spec']['names']['kind']
+        crd['spec']['names']['kind'],
+        '--name',
+        {'inputValue': 'name'},
+        '--namespace',
+        {'inputValue': 'namespace'},
+        '--success-condition',
+        {'inputValue': 'success_condition'},
+        '--failure-condition',
+        {'inputValue': 'failure_condition'}
     ]
 
     root = version['schema']['openAPIV3Schema']['properties']['spec']
@@ -72,15 +96,15 @@ def traverse(node, path=[]):
 
 
 if __name__ == '__main__':
+    with open('crds.yaml') as f:
+        crds = yaml.safe_load(f)
 
-    # Loop through all crds
-    for file in glob.glob('crds/*.yaml'):
-        with open(file) as f:
-            crd = yaml.safe_load(f)
+    for crd in crds['crds']:
+        with open(crd['file']) as f:
+            definition = yaml.safe_load(f)
 
-        # Generate component for each version
-        for version in crd['spec']['versions']:
-            component = generate(crd, version)
+        for version in definition['spec']['versions']:
+            component = generate(definition, version, crd['successCondition'], crd['failureCondition'])
 
             with open(f'dist/{component["name"]}-{version["name"]}.yaml', 'w') as f:
                 yaml.dump(component, f)

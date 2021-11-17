@@ -1,40 +1,21 @@
 import re
 import json
 import argparse
+from argparse import ArgumentTypeError
 
+import utils
 from executor import Executor
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--api-version', required=True)
-parser.add_argument('--kind', required=True)
+parser.add_argument('api_version')
+parser.add_argument('kind')
 parser.add_argument('--name', required=True)
 parser.add_argument('--namespace', required=True)
 parser.add_argument('--success-condition', required=True)
 parser.add_argument('--failure-condition', required=True)
 parser.add_argument('--timeout', type=int, default=3600)
-parser.add_argument('--param', action='append', nargs='+')
-
-def get(spec, path):
-    x, *xs = path
-
-    if not xs:
-        return spec[x]
-
-    if x not in spec:
-        spec[x] = {}
-
-    return get(spec[x], xs)
-
-def set(spec, path, value):
-    x, *xs = path
-
-    if not xs:
-        spec[x] = value
-    else:
-        if x not in spec:
-            spec[x] = {}
-        set(spec[x], xs, value)
+parser.add_argument('--param', action='append', nargs='*')
 
 def generate(apiVersion, kind, name, params):
     return {
@@ -48,23 +29,22 @@ def generate(apiVersion, kind, name, params):
 
 def generateSpec(params):
     spec = {}
-    for path, type, *value in params:
-        if value:
-            set(spec, path.split('.'), parseValue(type, value))
+    for key, type, value in params:
+        utils.set(spec, key.split('.'), parseValue(type, value))
 
     return spec
 
 def parseValue(type, value):
     if type == 'string':
-        return value[0]
+        return value
     if type == 'integer':
-        return int(value[0])
+        return int(value)
     if type == 'boolean':
-        return value[0] == 'True'
+        return value == 'True'
     if type == 'array':
-        return json.loads(value[0])
+        return json.loads(value)
 
-    raise argparse.ArgumentTypeError(f'Unknown type "{type}". Valid types are {{array, boolean, integer, string}}')
+    raise ArgumentTypeError(f'Unknown type "{type}". Valid types are {{array, boolean, integer, string}}')
 
 def parseCondition(condition):
     conditions = []
@@ -80,9 +60,9 @@ def parseCondition(condition):
 
 def satisfies(resource, conditions):
     for lhs, op, rhs in conditions:
-        if op == '==' and str(get(resource, lhs)) == rhs:
+        if op == '==' and str(utils.get(resource, lhs)) == rhs:
             return True
-        if op == '!=' and str(get(resource, lhs)) != rhs:
+        if op == '!=' and str(utils.get(resource, lhs)) != rhs:
             return True
 
     return False
@@ -90,7 +70,6 @@ def satisfies(resource, conditions):
 def run(apiVersion, kind, namespace, name, params, successConditions, failureConditions, timeout):
     # generate
     body = generate(apiVersion, kind, name, params)
-    # print(body)
 
     # create
     executor = Executor(apiVersion, kind, args.namespace)
@@ -108,16 +87,15 @@ def run(apiVersion, kind, namespace, name, params, successConditions, failureCon
     return False, f'{kind} "{resource.metadata.name}" did complete within {timeout}s'
 
 if __name__ == '__main__':
-    # parse args
     args = parser.parse_args()
+    print(args)
 
-    # run
     success, message = run(
         args.api_version,
         args.kind,
         args.namespace,
         args.name,
-        args.param,
+        [(k, t, v[0]) for k, t, *v in args.param if v],
         parseCondition(args.success_condition),
         parseCondition(args.failure_condition),
         args.timeout)
