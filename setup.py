@@ -9,6 +9,7 @@ setup(
    version='1.1',
    description='Generates Kubeflow Components from Kubernetes CRD specifications',
    long_description=long_description,
+   long_description_content_type='text/markdown',
    author='David Farr',
    author_email='david_farr@intuit.com',
    packages=['komponents', 'komponents.executor', 'komponents.generator'],
