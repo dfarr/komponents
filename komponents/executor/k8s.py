@@ -21,14 +21,16 @@ class Executor:
         self.resource = self.client.resources.get(api_version=apiVersion, kind=kind)
 
     def create(self, body, **kwargs):
-        return self.client.create(self.resource, namespace=self.namespace, body=body, **kwargs)
+        return self.client.create(
+            self.resource,
+            namespace=self.namespace,
+            body=body,
+            **kwargs)
 
     def watch(self, resource, **kwargs):
-        for event in self.client.watch(
+        return self.client.watch(
             self.resource,
             namespace=self.namespace,
             field_selector=f'metadata.name={resource.metadata.name}',
             resource_version=resource.metadata.resourceVersion,
-            **kwargs):
-
-            yield event
+            **kwargs)
