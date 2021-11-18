@@ -1,9 +1,14 @@
 from setuptools import setup, find_packages
 
+
+with open('README.md') as f:
+   long_description = f.read()
+
 setup(
    name='komponents',
-   version='1.0',
-   description='Generates kubeflow components from kubernetes crd specs.',
+   version='1.1',
+   description='Generates Kubeflow Components from Kubernetes CRD specifications',
+   long_description=long_description,
    author='David Farr',
    author_email='david_farr@intuit.com',
    packages=['komponents', 'komponents.executor', 'komponents.generator'],
