@@ -1,6 +1,8 @@
 .DS_Store
 pipeline.*
 components/
+execute.sh
+pod.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

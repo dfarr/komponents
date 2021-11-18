@@ -1,5 +1,3 @@
-from argparse import ArgumentTypeError
-
 
 def get(obj, key):
     x, *xs = key
@@ -8,7 +6,7 @@ def get(obj, key):
         return obj[x]
 
     if x not in obj:
-        raise ArgumentTypeError(f'Condition key "{x}" does not exist')
+        return None
 
     return get(obj[x], xs)
 

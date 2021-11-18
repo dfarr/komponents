@@ -11,10 +11,10 @@ class Executor:
         self.namespace = namespace
 
         if DEV:
-            print('using local config')
+            # print('using local config')
             config.load_kube_config()
         else:
-            print('using in-cluster config')
+            # print('using in-cluster config')
             config.load_incluster_config()
 
         self.client = dynamic.DynamicClient(client.ApiClient())

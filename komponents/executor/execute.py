@@ -53,9 +53,14 @@ def parseCondition(condition):
 
 def satisfies(resource, conditions):
     for lhs, op, rhs in conditions:
-        if op == '==' and str(utils.get(resource, lhs)) == rhs:
+        value = utils.get(resource, lhs)
+
+        if value is None:
+            raise ArgumentTypeError(f'Condition key "{".".join(lhs)}" does not exist')
+
+        if op == '==' and str(value) == rhs:
             return True
-        if op == '!=' and str(utils.get(resource, lhs)) != rhs:
+        if op == '!=' and str(value) != rhs:
             return True
 
     return False
