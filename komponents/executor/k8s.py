@@ -1,5 +1,8 @@
+import os
 from kubernetes import client, config, dynamic
 
+
+DEV = os.environ.get('DEV') == 'true'
 
 class Executor:
     def __init__(self, apiVersion, kind, namespace):
@@ -7,7 +10,13 @@ class Executor:
         self.kind = kind
         self.namespace = namespace
 
-        config.load_kube_config()
+        if DEV:
+            print('using local config')
+            config.load_kube_config()
+        else:
+            print('using in-cluster config')
+            config.load_incluster_config()
+
         self.client = dynamic.DynamicClient(client.ApiClient())
         self.resource = self.client.resources.get(api_version=apiVersion, kind=kind)
 

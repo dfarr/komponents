@@ -3,23 +3,10 @@ import json
 import argparse
 from argparse import ArgumentTypeError
 
-import utils
-from executor import Executor
+from komponents.executor import k8s, utils
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('api_version')
-parser.add_argument('kind')
-parser.add_argument('--name', required=True)
-parser.add_argument('--namespace', required=True)
-parser.add_argument('--success-condition', required=True)
-parser.add_argument('--failure-condition', required=True)
-parser.add_argument('--timeout', type=int, default=3600)
-parser.add_argument('--annotations', type=json.loads, default='{}')
-parser.add_argument('--labels', type=json.loads, default='{}')
-parser.add_argument('--param', action='append', nargs='*')
-
-def generate(apiVersion, kind, name, annotations, labels, params):
+def generate(apiVersion, kind, name, params, annotations, labels):
     return {
         'apiVersion': apiVersion,
         'kind': kind,
@@ -71,15 +58,18 @@ def satisfies(resource, conditions):
 
     return False
 
-def run(apiVersion, kind, namespace, name, params, successConditions, failureConditions, timeout, annotations, labels):
+def main(apiVersion, kind, namespace, name, params, successCondition, failureCondition, timeout, annotations, labels):
+    successConditions = parseCondition(successCondition)
+    failureConditions = parseCondition(failureCondition)
+
     # generate
-    body = generate(apiVersion, kind, name, annotations, labels, params)
-    # print(body)
+    body = generate(apiVersion, kind, name, params, annotations, labels)
+    print('Creating:', json.dumps(body, indent=4))
 
     # create
-    executor = Executor(apiVersion, kind, args.namespace)
+    executor = k8s.Executor(apiVersion, kind, namespace)
     resource = executor.create(body)
-    # print(resource)
+    print('Created:', resource.metadata.name)
 
     # watch
     for event in executor.watch(resource, timeout=timeout):
@@ -90,24 +80,3 @@ def run(apiVersion, kind, namespace, name, params, successConditions, failureCon
             return False, f'{kind} "{resource.metadata.name}" satisfied failure condition'
 
     return False, f'{kind} "{resource.metadata.name}" did not satisfy success or failure condition within {timeout}s'
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    # print(args)
-
-    success, message = run(
-        args.api_version,
-        args.kind,
-        args.namespace,
-        args.name,
-        [(k, t, v[0]) for k, t, *v in args.param if v],
-        parseCondition(args.success_condition),
-        parseCondition(args.failure_condition),
-        args.timeout,
-        args.annotations,
-        args.labels)
-
-    if not success:
-        raise Exception(message)
-
-    print(message)

@@ -1,4 +1,3 @@
-import glob
 import yaml
 
 
@@ -9,7 +8,7 @@ k8sTypeToKubeflowType = {
     'string': 'String'
 }
 
-def generate(crd, version, successCondition, failureCondition):
+def generate(crd, version, image, successCondition, failureCondition):
     inputs = [{
         'name': 'name',
         'type': 'String'
@@ -40,15 +39,24 @@ def generate(crd, version, successCondition, failureCondition):
     }]
 
     command = [
+        'komponents',
+        'execute',
         f'{crd["spec"]["group"]}/{version["name"]}',  # apiVersion
         crd['spec']['names']['kind'],                 # kind
-        '--name', {'inputValue': 'name'},
-        '--namespace', {'inputValue': 'namespace'},
-        '--success-condition', {'inputValue': 'success_condition'},
-        '--failure-condition', {'inputValue': 'failure_condition'},
-        '--timeout', {'inputValue': 'timeout'},
-        '--annotations', {'inputValue': 'annotations'},
-        '--labels', {'inputValue': 'labels'}
+        '--name',
+        {'inputValue': 'name'},
+        '--namespace',
+        {'inputValue': 'namespace'},
+        '--success-condition',
+        {'inputValue': 'success_condition'},
+        '--failure-condition',
+        {'inputValue': 'failure_condition'},
+        '--timeout',
+        {'inputValue': 'timeout'},
+        '--annotations',
+        {'inputValue': 'annotations'},
+        '--labels',
+        {'inputValue': 'labels'}
     ]
 
     root = version['schema']['openAPIV3Schema']['properties']['spec']
@@ -73,7 +81,7 @@ def generate(crd, version, successCondition, failureCondition):
         'inputs': inputs,
         'implementation': {
             'container': {
-                'image': 'image',
+                'image': image,
                 'command': command
             }
         }
@@ -106,16 +114,19 @@ def traverse(node, path=[]):
     return []
 
 
-if __name__ == '__main__':
-    with open('crds.yaml') as f:
-        crds = yaml.safe_load(f)
-
+def main(crds, image):
     for crd in crds['crds']:
         with open(crd['file']) as f:
             definition = yaml.safe_load(f)
 
         for version in definition['spec']['versions']:
-            component = generate(definition, version, crd['successCondition'], crd['failureCondition'])
+            component = generate(
+                definition,
+                version,
+                image,
+                crd['successCondition'],
+                crd['failureCondition'])
 
-            with open(f'dist/{component["name"]}-{version["name"]}.yaml', 'w') as f:
-                yaml.dump(component, f)
+            filename = f'{component["name"]}-{version["name"]}.yaml'
+
+            yield filename, component
