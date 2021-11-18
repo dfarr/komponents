@@ -16,6 +16,9 @@ def main():
     generator.initialize(generator_parser)
 
     args = parser.parse_args()
-    print(args)
+    # print(args)
 
     args.func(args)
+
+if __name__ == '__main__':
+    main()

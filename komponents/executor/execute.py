@@ -26,14 +26,16 @@ def generateSpec(params):
     return spec
 
 def parseValue(type, value):
-    if type == 'string':
-        return value
-    if type == 'integer':
-        return int(value)
-    if type == 'boolean':
-        return value == 'True'
     if type == 'array':
         return json.loads(value)
+    if type == 'boolean':
+        return value == 'True'
+    if type == 'integer':
+        return int(value)
+    if type == 'number':
+        return float(value)
+    if type == 'string':
+        return value
 
     raise ArgumentTypeError(f'Unknown type "{type}". Valid types are {{array, boolean, integer, string}}')
 

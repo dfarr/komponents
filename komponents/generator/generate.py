@@ -1,10 +1,11 @@
 import yaml
 
 
-k8sTypeToKubeflowType = {
+typeMap = {
     'array': 'List',
     'boolean': 'Bool',
     'integer': 'Integer',
+    'number': 'Float',
     'string': 'String'
 }
 
@@ -65,7 +66,7 @@ def generate(crd, version, image, successCondition, failureCondition):
         name = '_'.join(node['path']).lower()
         inputs += [{
             'name': name,
-            'type': k8sTypeToKubeflowType[node['type']],
+            'type': typeMap[node['type']],
             'description': node['description'],
             'optional': True
         }]
@@ -101,7 +102,7 @@ def traverse(node, path=[]):
 
         return args
 
-    elif type_ in ('array', 'boolean', 'integer', 'string'):
+    elif type_ in typeMap:
         return [{
             'path': path,
             'type': type_,
@@ -114,19 +115,13 @@ def traverse(node, path=[]):
     return []
 
 
-def main(crds, image):
-    for crd in crds['crds']:
-        with open(crd['file']) as f:
-            definition = yaml.safe_load(f)
+def main(crd, image, successCondition, failureCondition):
+    for version in crd['spec']['versions']:
+        component = generate(
+            crd,
+            version,
+            image,
+            successCondition,
+            failureCondition)
 
-        for version in definition['spec']['versions']:
-            component = generate(
-                definition,
-                version,
-                image,
-                crd['successCondition'],
-                crd['failureCondition'])
-
-            filename = f'{component["name"]}-{version["name"]}.yaml'
-
-            yield filename, component
+        yield version['name'], component

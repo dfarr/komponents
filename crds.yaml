@@ -1,9 +1,0 @@
-crds:
-- name: SparkApplication
-  file: crds/sparkapplications.sparkoperator.k8s.io.yaml
-  successCondition: status.applicationState.state==COMPLETED
-  failureCondition: status.applicationState.state==ERROR,status.applicationState.state==FAILED
-- name: TrainingJob
-  file: crds/trainingjobs.sagemaker.services.k8s.aws.yaml
-  successCondition: ''
-  failureCondition: ''
