@@ -2,8 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
    name='komponents',
-   use_scm_version=True,
-   setup_requires=['setuptools_scm'],
+   version='1.0',
    description='Generates kubeflow components from kubernetes crd specs.',
    author='David Farr',
    author_email='david_farr@intuit.com',
