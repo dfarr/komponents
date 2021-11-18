@@ -9,7 +9,7 @@ def initialize(parser):
     # set args
     parser.add_argument('--success-condition', required=True)
     parser.add_argument('--failure-condition', required=True)
-    parser.add_argument('--image', default='dfarr/komponents:latest')
+    parser.add_argument('--image', default='farrd/komponents:latest')
     parser.add_argument('--output-dir', default='components')
 
     # set function

@@ -37,4 +37,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: dfarr/komponents:latest
+        tags: farrd/komponents:latest
