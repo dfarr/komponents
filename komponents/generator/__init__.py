@@ -24,7 +24,7 @@ def main(args):
 
     print(f'Generating component for {group}:{name}')
 
-    directory = os.path.join(args.output_dir, group, name)
+    directory = os.path.join(args.output_dir, group)
     os.makedirs(directory, exist_ok=True)
 
     for version, component in generate.main(crd, args.image, args.success_condition, args.failure_condition):

@@ -6,7 +6,7 @@ with open('README.md') as f:
 
 setup(
    name='komponents',
-   version='1.1',
+   version='1.2',
    description='Generates Kubeflow Components from Kubernetes CRD specifications',
    long_description=long_description,
    long_description_content_type='text/markdown',
